@@ -523,6 +523,15 @@ function updateStats() {
   document.getElementById('stat-error').textContent = clients.filter(c=>c.status==='error').length;
 }
 
+function addLog(msg, type='info') {
+  const area = document.getElementById('log-area');
+  if (!area) return;
+  const div = document.createElement('div');
+  div.className = 'log-line log-' + type;
+  div.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+  area.prepend(div);
+}
+
 // ── GMAIL API OAUTH ──────────────────────────────────────────
 const CLIENT_ID = '550544333640-5h9gmcs4kmd3snf8bpj3qkfq6sfbdq1n.apps.googleusercontent.com';
 let accessToken = null;
