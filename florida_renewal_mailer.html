@@ -225,7 +225,7 @@
       </div>
       <div class="grid-2">
         <div class="field"><label>Tu nombre / Remitente</label><input type="text" id="sender-name" placeholder="Ej: Maria Rodriguez, Registered Agent" value="Tu Agente Registrado en Florida"></div>
-        <div class="field"><label>Asunto del correo</label><input type="text" id="email-subject" value="⚠️ Renovación Anual Requerida — {nombre_empresa} — Vence 01 Mayo 2026"></div>
+        <div class="field"><label>Asunto del correo</label><input type="text" id="email-subject" value="MULTA DE $400 si no renuevas antes del 01 de Mayo!"></div>
       </div>
     </div>
 
@@ -601,19 +601,20 @@ function onConnected(email) {
 function makeEmailRFC(client) {
   const subject = buildSubject(client);
   const htmlBody = buildEmail(client);
-  const utf8Subject = '=?UTF-8?B?' + btoa(unescape(encodeURIComponent(subject))) + '?=';
-  const emailLines = [
+  // Build email using proper RFC 2822 format
+  const emailParts = [
     'From: Lorogi Services Corp <' + authorizedEmail + '>',
-    'To: ' + client.dueno + ' <' + client.email + '>',
-    'Subject: ' + utf8Subject,
+    'To: ' + client.email,
+    'Subject: ' + subject,
     'MIME-Version: 1.0',
-    'Content-Type: text/html; charset=UTF-8',
-    'Content-Transfer-Encoding: base64',
+    'Content-Type: text/html; charset=utf-8',
     '',
-    btoa(unescape(encodeURIComponent(htmlBody)))
+    htmlBody
   ].join('\r\n');
-  return btoa(unescape(encodeURIComponent(emailLines)))
-    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  // Encode to base64url
+  const encoded = unescape(encodeURIComponent(emailParts));
+  const b64 = btoa(encoded);
+  return b64.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
 
 async function sendSingleEmail(client) {
