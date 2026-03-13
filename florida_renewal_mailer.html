@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Florida Renewal Mailer</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a1628;
+    --gold: #c9a84c;
+    --gold-light: #f0d080;
+    --cream: #faf7f0;
+    --red: #c0392b;
+    --green: #1a7a4a;
+    --gray: #6b7280;
+    --border: #e5e0d5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--cream);
+    min-height: 100vh;
+  }
+  .header {
+    background: linear-gradient(135deg, #0a1628 0%, #1a2e50 100%);
+    border-bottom: 2px solid var(--gold);
+    padding: 28px 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .header-icon { font-size: 36px; }
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    color: var(--gold);
+    letter-spacing: 0.5px;
+  }
+  .header p { font-size: 13px; color: #8fa0bc; margin-top: 3px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; margin-bottom: 32px; }
+  .tab {
+    padding: 10px 22px; border-radius: 8px 8px 0 0; cursor: pointer;
+    font-weight: 500; font-size: 14px; transition: all 0.2s;
+    background: #132040; color: #8fa0bc; border: 1px solid #1e3060; border-bottom: none;
+  }
+  .tab.active { background: var(--cream); color: var(--navy); border-color: var(--gold); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* CARDS */
+  .card {
+    background: #0f1e38;
+    border: 1px solid #1e3060;
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+  .card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px; color: var(--gold);
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #1e3060;
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  label { display: block; font-size: 12px; font-weight: 600; color: #8fa0bc; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  input[type=text], input[type=email], textarea, select {
+    width: 100%; padding: 11px 14px;
+    background: #0a1628; border: 1px solid #1e3060;
+    border-radius: 8px; color: var(--cream); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; transition: border-color 0.2s;
+  }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--gold); }
+  textarea { min-height: 120px; resize: vertical; }
+  .field { margin-bottom: 16px; }
+
+  /* BUTTONS */
+  .btn {
+    padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px;
+    cursor: pointer; border: none; transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+  }
+  .btn-gold { background: var(--gold); color: var(--navy); }
+  .btn-gold:hover { background: var(--gold-light); }
+  .btn-outline { background: transparent; border: 1px solid var(--gold); color: var(--gold); }
+  .btn-outline:hover { background: var(--gold); color: var(--navy); }
+  .btn-red { background: var(--red); color: white; }
+  .btn-green { background: var(--green); color: white; }
+  .btn-green:hover { background: #22a05e; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* CLIENTS TABLE */
+  .table-wrapper { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: #0a1628; color: #8fa0bc; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.8px; padding: 12px 14px; text-align: left; border-bottom: 1px solid #1e3060; }
+  td { padding: 11px 14px; border-bottom: 1px solid #0f1e38; vertical-align: middle; }
+  tr:hover td { background: #132040; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-pending { background: #3a2010; color: #f59e0b; }
+  .badge-sent { background: #0a2e1a; color: #34d399; }
+  .badge-error { background: #2e0a0a; color: #f87171; }
+
+  /* EMAIL PREVIEW */
+  .email-preview {
+    background: white; color: #1a1a2e; border-radius: 12px;
+    overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .email-header-bar {
+    background: #f0ebe0; padding: 20px 28px;
+    border-bottom: 2px solid #c9a84c;
+  }
+  .email-body { padding: 32px 28px; font-family: Georgia, serif; font-size: 15px; line-height: 1.8; color: #1a1a2e; }
+  .email-logo { font-family: 'Playfair Display', serif; font-size: 22px; color: #0a1628; font-weight: 900; }
+  .email-alert { background: #fff3cd; border-left: 4px solid #c9a84c; padding: 16px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+  .email-deadline { background: #fde8e8; border-left: 4px solid #c0392b; padding: 16px 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+  .email-cta { display: inline-block; background: #0a1628; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 16px 0; }
+
+  /* IMPORT AREA */
+  .import-zone {
+    border: 2px dashed #1e3060; border-radius: 12px; padding: 40px; text-align: center;
+    cursor: pointer; transition: all 0.2s; position: relative;
+  }
+  .import-zone:hover { border-color: var(--gold); background: #132040; }
+  .import-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .import-icon { font-size: 40px; margin-bottom: 12px; }
+
+  /* PROGRESS */
+  .progress-bar { background: #0a1628; border-radius: 20px; height: 12px; overflow: hidden; margin: 12px 0; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), #22a05e); transition: width 0.5s ease; border-radius: 20px; }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-card { background: #132040; border: 1px solid #1e3060; border-radius: 10px; padding: 16px; text-align: center; }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--gold); }
+  .stat-label { font-size: 12px; color: #8fa0bc; text-transform: uppercase; letter-spacing: 0.8px; }
+
+  .alert { padding: 14px 18px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; }
+  .alert-info { background: #132040; border: 1px solid #1e5080; color: #7eb8f7; }
+  .alert-warn { background: #2e2000; border: 1px solid #b8860b; color: #f59e0b; }
+  .alert-success { background: #0a2e1a; border: 1px solid #1a7a4a; color: #34d399; }
+  .alert-error { background: #2e0a0a; border: 1px solid #7a1a1a; color: #f87171; }
+
+  #log-area { background: #050d1a; border: 1px solid #1e3060; border-radius: 8px; padding: 14px; max-height: 220px; overflow-y: auto; font-family: monospace; font-size: 12px; }
+  .log-line { padding: 3px 0; border-bottom: 1px solid #0a1628; }
+  .log-ok { color: #34d399; }
+  .log-err { color: #f87171; }
+  .log-info { color: #7eb8f7; }
+
+  @media (max-width: 700px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .stats { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">🏛️</div>
+  <div>
+    <h1>Florida Annual Renewal Mailer</h1>
+    <p>Envío masivo personalizado · BCC activado · Diseño profesional</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('clients')">📋 Clientes</div>
+    <div class="tab" onclick="showTab('template')">✉️ Plantilla</div>
+    <div class="tab" onclick="showTab('preview')">👁️ Vista Previa</div>
+    <div class="tab" onclick="showTab('send')">🚀 Enviar</div>
+  </div>
+
+  <!-- TAB 1: CLIENTS -->
+  <div id="tab-clients" class="tab-content active">
+    <div class="card">
+      <h3>📥 Importar Lista de Clientes</h3>
+      <div class="alert alert-info">
+        El CSV debe tener columnas: <strong>nombre_empresa, nombre_dueno, email</strong> (en ese orden o con esos encabezados)
+      </div>
+      <div class="import-zone" onclick="document.getElementById('csv-file').click()">
+        <input type="file" id="csv-file" accept=".csv" onchange="loadCSV(event)">
+        <div class="import-icon">📂</div>
+        <div style="font-size:16px; font-weight:600; margin-bottom:8px;">Clic para cargar CSV</div>
+        <div style="font-size:13px; color:#8fa0bc;">O arrastra el archivo aquí</div>
+      </div>
+      <div style="margin-top:16px; display:flex; gap:12px; align-items:center;">
+        <button class="btn btn-outline" onclick="loadSampleData()">Cargar datos de ejemplo</button>
+        <button class="btn btn-outline" onclick="downloadTemplate()">⬇️ Descargar plantilla CSV</button>
+        <button class="btn btn-red" onclick="clearClients()" style="margin-left:auto;">🗑️ Limpiar lista</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>➕ Agregar cliente manualmente</h3>
+      <div class="grid-3">
+        <div class="field"><label>Nombre de la Empresa</label><input type="text" id="add-empresa" placeholder="ABC Corp LLC"></div>
+        <div class="field"><label>Nombre del Dueño</label><input type="text" id="add-dueno" placeholder="Juan García"></div>
+        <div class="field"><label>Email del Dueño</label><input type="email" id="add-email" placeholder="juan@empresa.com"></div>
+      </div>
+      <button class="btn btn-gold" onclick="addClient()">+ Agregar</button>
+    </div>
+
+    <div class="card">
+      <h3>👥 Lista de Clientes (<span id="client-count">0</span>)</h3>
+      <div class="table-wrapper">
+        <table id="clients-table">
+          <thead><tr><th>#</th><th>Empresa</th><th>Dueño</th><th>Email</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="clients-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: TEMPLATE -->
+  <div id="tab-template" class="tab-content">
+    <div class="card">
+      <h3>⚙️ Configuración del Correo</h3>
+      <div class="alert alert-warn">
+        ⚠️ Variables disponibles: <strong>{nombre_empresa}</strong> y <strong>{nombre_dueno}</strong> — se reemplazarán automáticamente por cada cliente.
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>Tu nombre / Remitente</label><input type="text" id="sender-name" placeholder="Ej: Maria Rodriguez, Registered Agent" value="Tu Agente Registrado en Florida"></div>
+        <div class="field"><label>Asunto del correo</label><input type="text" id="email-subject" value="⚠️ Renovación Anual Requerida — {nombre_empresa} — Vence 01 Mayo 2026"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📝 Cuerpo del correo (HTML)</h3>
+      <div class="alert alert-info">Puedes editar el HTML directamente. Usa {nombre_empresa} y {nombre_dueno} donde quieras personalización.</div>
+      <textarea id="email-body" style="min-height:400px; font-family:monospace; font-size:12px;"></textarea>
+      <div style="margin-top:12px; display:flex; gap:12px;">
+        <button class="btn btn-outline" onclick="resetTemplate()">↺ Restaurar plantilla original</button>
+        <button class="btn btn-gold" onclick="showTab('preview')">👁️ Ver preview →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: PREVIEW -->
+  <div id="tab-preview" class="tab-content">
+    <div class="card">
+      <h3>👁️ Vista previa del correo</h3>
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="field">
+          <label>Previsualizar para cliente</label>
+          <select id="preview-select" onchange="updatePreview()"><option value="0">— Selecciona un cliente —</option></select>
+        </div>
+        <div></div>
+      </div>
+      <div id="preview-container">
+        <div class="email-preview">
+          <div id="preview-frame" style="padding:0;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: SEND -->
+  <div id="tab-send" class="tab-content">
+    <div class="stats">
+      <div class="stat-card"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Total clientes</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-sent" style="color:#34d399;">0</div><div class="stat-label">Enviados</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-error" style="color:#f87171;">0</div><div class="stat-label">Errores</div></div>
+    </div>
+
+    <div class="card" id="card-connect">
+      <h3>🔑 Paso 1 — Conectar tu cuenta <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="7c15121a133c10130e131b15521f1311">[email&#160;protected]</a></h3>
+      <div class="alert alert-info">
+        La herramienta usará la <strong>API oficial de Gmail</strong> para enviar directamente desde <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="6d04030b022d01021f020a04430e0200">[email&#160;protected]</a></strong>.
+        Google te pedirá permiso una sola vez — es 100% seguro y oficial.
+      </div>
+      <div id="connect-status" style="margin:16px 0;">
+        <div style="display:flex; align-items:center; gap:14px; padding:16px; background:#0a1628; border-radius:10px; border:1px solid #1e3060;">
+          <div style="font-size:32px;">📭</div>
+          <div>
+            <div style="font-weight:600; font-size:15px;">No conectado</div>
+            <div style="font-size:13px; color:#8fa0bc; margin-top:3px;">Haz clic en el botón para autorizar con Google</div>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-gold" id="btn-connect" onclick="connectGmail()" style="font-size:15px; padding:14px 28px;">
+        🔗 Conectar con Google / Gmail
+      </button>
+      <div style="margin-top:14px; font-size:12px; color:#5a7090; line-height:1.8;">
+        ⚠️ Cuando Google te pregunte con qué cuenta → elige <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="deb7b0b8b19eb2b1acb1b9b7f0bdb1b3">[email&#160;protected]</a></strong><br>
+        🔒 Solo pedimos permiso para <strong>enviar correos</strong>. No leemos nada de tu bandeja.
+      </div>
+    </div>
+
+    <div class="card" id="card-send-action" style="opacity:0.4; pointer-events:none;">
+      <h3>🚀 Paso 2 — Enviar correos</h3>
+      <div class="alert alert-info" id="send-account-info">Conecta tu cuenta primero.</div>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:16px;">
+        <button class="btn btn-green" id="btn-send-all" onclick="sendAllEmails()" style="font-size:15px; padding:14px 32px;">🚀 Enviar todos los correos ahora</button>
+        <button class="btn btn-outline" onclick="sendTestEmail()">🧪 Enviar prueba a mí misma</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📊 Progreso de envío</h3>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <div id="progress-text" style="font-size:13px; color:#8fa0bc; margin-bottom:16px;">0 de 0 enviados</div>
+      <div id="log-area">
+        <div class="log-line log-info">📋 Conecta tu cuenta Gmail para comenzar.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+let clients = [];
+let sentCount = 0, errorCount = 0;
+
+const defaultTemplate = `<div style="max-width:620px;margin:0 auto;font-family:Georgia,serif;background:#ffffff;">
+  <div style="background:#0a1628;padding:28px 32px;text-align:center;">
+    <div style="font-family:'Georgia',serif;font-size:24px;color:#c9a84c;font-weight:bold;letter-spacing:1px;">FLORIDA REGISTERED AGENT</div>
+    <div style="font-size:12px;color:#8fa0bc;margin-top:6px;letter-spacing:2px;text-transform:uppercase;">Official Annual Renewal Notice</div>
+  </div>
+  
+  <div style="padding:36px 32px;color:#1a1a2e;">
+    <p style="font-size:15px;margin-bottom:20px;">Estimado/a <strong>{nombre_dueno}</strong>,</p>
+    
+    <p style="font-size:15px;line-height:1.8;margin-bottom:20px;">
+      Le escribimos para informarle que la empresa <strong style="color:#0a1628;">{nombre_empresa}</strong>, registrada en el estado de Florida, 
+      tiene pendiente su <strong>Renovación Anual Obligatoria</strong> ante el Departamento de Estado de Florida (Division of Corporations).
+    </p>
+
+    <div style="background:#fff8e7;border-left:4px solid #c9a84c;padding:18px 22px;margin:24px 0;border-radius:0 8px 8px 0;">
+      <div style="font-weight:bold;font-size:16px;color:#0a1628;margin-bottom:8px;">📅 FECHA LÍMITE: 1 DE MAYO DE 2026</div>
+      <div style="font-size:14px;color:#5a4a20;line-height:1.7;">
+        El estado de Florida requiere que todas las empresas registradas presenten su reporte anual antes del 1ro de mayo de cada año.
+        Este proceso es obligatorio para mantener el estatus <em>Active</em> de su empresa.
+      </div>
+    </div>
+
+    <div style="background:#fde8e8;border-left:4px solid #c0392b;padding:18px 22px;margin:24px 0;border-radius:0 8px 8px 0;">
+      <div style="font-weight:bold;font-size:16px;color:#c0392b;margin-bottom:8px;">⚠️ MULTA POR ATRASO: $400 USD</div>
+      <div style="font-size:14px;color:#7a1a1a;line-height:1.7;">
+        Las empresas que no renueven antes del 1ro de mayo recibirán automáticamente una multa de <strong>$400.00</strong> 
+        adicionales al costo de renovación estándar. Pasada esta fecha, el estado puede disolver su empresa.
+      </div>
+    </div>
+
+    <p style="font-size:15px;line-height:1.8;margin-bottom:24px;">
+      Para proceder con la renovación de <strong>{nombre_empresa}</strong>, por favor contáctenos lo antes posible. 
+      Nuestro equipo se encargará de todo el proceso de manera rápida y eficiente.
+    </p>
+
+    <div style="text-align:center;margin:36px 0;">
+      <a href="mailto:info@lorogi.com?subject=Solicitud de Renovación Anual — {nombre_empresa}&body=Hola,%0A%0AMi nombre es {nombre_dueno} y me comunico para solicitar información sobre la renovación anual de mi empresa {nombre_empresa}.%0A%0AQuedo en espera de su respuesta.%0A%0ASaludos," 
+         style="display:inline-block;background:#1a7a4a;color:#ffffff;padding:18px 44px;border-radius:50px;text-decoration:none;font-family:Georgia,serif;font-weight:bold;font-size:17px;letter-spacing:0.5px;box-shadow:0 4px 18px rgba(26,122,74,0.35);">
+        ✅ &nbsp;Renovar Ahora
+      </a>
+      <div style="margin-top:12px;font-size:12px;color:#888;font-family:Arial,sans-serif;">
+        Al hacer clic se abrirá un correo pre-llenado a info@lorogi.com
+      </div>
+    </div>
+
+
+
+    <p style="font-size:14px;color:#6b7280;line-height:1.7;margin-top:24px;">
+      Si tiene alguna pregunta sobre este aviso o necesita asistencia con la renovación de <strong>{nombre_empresa}</strong>, 
+      no dude en contactarnos. Estamos aquí para ayudarle.
+    </p>
+
+    <div style="margin-top:32px;padding-top:24px;border-top:2px solid #e8e0d0;">
+      <p style="font-size:15px;margin-bottom:20px;color:#3a3a5e;">
+        Cordialmente,
+      </p>
+      <table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,sans-serif;">
+        <tr>
+          <td style="padding-right:20px;border-right:3px solid #c9a84c;vertical-align:middle;">
+            <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAbABsAAD/4QC8RXhpZgAASUkqAAgAAAAGABIBAwABAAAAAQAAABoBBQABAAAAVgAAABsBBQABAAAAXgAAACgBAwABAAAAAgAAABMCAwABAAAAAQAAAGmHBAABAAAAZgAAAAAAAABsAAAAAQAAAGwAAAABAAAABgAAkAcABAAAADAyMTABkQcABAAAAAECAwAAoAcABAAAADAxMDABoAMAAQAAAP//AAACoAMAAQAAAKwBAAADoAMAAQAAAAMBAAAAAAAA/+EPVGh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8APD94cGFja2V0IGJlZ2luPSfvu78nIGlkPSdXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQnPz4KPHg6eG1wbWV0YSB4bWxuczp4PSdhZG9iZTpuczptZXRhLyc+CjxyZGY6UkRGIHhtbG5zOnJkZj0naHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyc+CgogPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9JycKICB4bWxuczpBdHRyaWI9J2h0dHA6Ly9ucy5hdHRyaWJ1dGlvbi5jb20vYWRzLzEuMC8nPgogIDxBdHRyaWI6QWRzPgogICA8cmRmOlNlcT4KICAgIDxyZGY6bGkgcmRmOnBhcnNlVHlwZT0nUmVzb3VyY2UnPgogICAgIDxBdHRyaWI6Q3JlYXRlZD4yMDI2LTAxLTIzPC9BdHRyaWI6Q3JlYXRlZD4KICAgICA8QXR0cmliOkRhdGE+eyZxdW90O2RvYyZxdW90OzomcXVvdDtEQUV1NW8za19NRSZxdW90OywmcXVvdDt1c2VyJnF1b3Q7OiZxdW90O1VBRXU1ZVdTS1g0JnF1b3Q7LCZxdW90O2JyYW5kJnF1b3Q7OiZxdW90O0xvcm9naSBTZXJ2aWNlcyZxdW90OywmcXVvdDt0ZW1wbGF0ZSZxdW90OzomcXVvdDtMaWdodCBHcmVlbiBDdXJ2ZXMgQWNjb3VudGluZyBMb2dvJnF1b3Q7fTwvQXR0cmliOkRhdGE+CiAgICAgPEF0dHJpYjpFeHRJZD4wMGRjOWRiMS04N2UxLTRiYWItYjA5Ni02YjQxYTgyOTNhMzA8L0F0dHJpYjpFeHRJZD4KICAgICA8QXR0cmliOkZiSWQ+NTI1MjY1OTE0MTc5NTgwPC9BdHRyaWI6RmJJZD4KICAgICA8QXR0cmliOlRvdWNoVHlwZT4yPC9BdHRyaWI6VG91Y2hUeXBlPgogICAgPC9yZGY6bGk+CiAgIDwvcmRmOlNlcT4KICA8L0F0dHJpYjpBZHM+CiA8L3JkZjpEZXNjcmlwdGlvbj4KCiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0nJwogIHhtbG5zOmRjPSdodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyc+CiAgPGRjOnRpdGxlPgogICA8cmRmOkFsdD4KICAgIDxyZGY6bGkgeG1sOmxhbmc9J3gtZGVmYXVsdCc+TG9nbyBsb3JvZ2kgc2VydmljZXMganBnICAtIDE8L3JkZjpsaT4KICAgPC9yZGY6QWx0PgogIDwvZGM6dGl0bGU+CiA8L3JkZjpEZXNjcmlwdGlvbj4KCiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0nJwogIHhtbG5zOnBkZj0naHR0cDovL25zLmFkb2JlLmNvbS9wZGYvMS4zLyc+CiAgPHBkZjpBdXRob3I+TG9yb2dpIFNlcnZpY2VzPC9wZGY6QXV0aG9yPgogPC9yZGY6RGVzY3JpcHRpb24+CgogPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9JycKICB4bWxuczp4bXA9J2h0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8nPgogIDx4bXA6Q3JlYXRvclRvb2w+Q2FudmEgKFJlbmRlcmVyKSBkb2M9REFFdTVvM2tfTUUgdXNlcj1VQUV1NWVXU0tYNCBicmFuZD1Mb3JvZ2kgU2VydmljZXMgdGVtcGxhdGU9TGlnaHQgR3JlZW4gQ3VydmVzIEFjY291bnRpbmcgTG9nbzwveG1wOkNyZWF0b3JUb29sPgogPC9yZGY6RGVzY3JpcHRpb24+CjwvcmRmOlJERj4KPC94OnhtcG1ldGE+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCjw/eHBhY2tldCBlbmQ9J3cnPz7/2wBDAAUEBAQEAwUEBAQGBQUGCA0ICAcHCBALDAkNExAUExIQEhIUFx0ZFBYcFhISGiMaHB4fISEhFBkkJyQgJh0gISD/2wBDAQUGBggHCA8ICA8gFRIVICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICD/wAARCAEDAawDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD7LooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiqWoatp2lx7767SHIyFJyx+gHJrj9S+IcWx4tMtHLEECaUgYPqF5z+NclfGUKGlSVn+Jz1cTSpfGzvaQkKMsQB6mvD7jW9buyTc6xePnqFlMYP4JgfpWeyh23ON59W5NeXUzygvgi3+B5TzZ/Zh97/4D/M98+02+cefHn03CpQQRkEEe1fNeraiLSLyIT++Ydv4R61zcVxPA++GaSJvVGIP6V9LldCrj6Pt5x5E9ut/PpZHz2N4whhKvslS5n11tb8GfXFFfL9l4v8UaeQbXXbwAdFeQyL+TZFdbpnxg122Krqdnb36DqyjynP4jI/SvQnldWPwtM1w3GmAqO1aMofivw1/A9zorkPD3xE8PeIJ0tElezvH4WG4AG4+isOD9OD7V19ebUpzpvlmrM+vw2LoYuHtMPNSXkFFFFZnUFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRTJZY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" alt="Lorogi Services" style="width:130px;display:block;">
+          </td>
+          <td style="padding-left:20px;vertical-align:middle;">
+            <div style="font-size:16px;font-weight:bold;color:#0a1628;font-family:Georgia,serif;">Alejandra Napolitano</div>
+            <div style="font-size:13px;color:#3a7a4a;font-weight:600;margin-top:3px;letter-spacing:0.3px;">Lorogi Services Corp</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:8px;line-height:1.8;">
+              📞 <a href="tel:7863832890" style="color:#6b7280;text-decoration:none;">786.383.2890</a><br>
+              ✉️ <a href="mailto:info@lorogi.com" style="color:#1a7a4a;text-decoration:none;">info@lorogi.com</a>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div style="background:#0a1628;padding:20px 32px;text-align:center;font-size:12px;color:#8fa0bc;">
+    <p>Lorogi Services Corp &nbsp;|&nbsp; <a href="mailto:info@lorogi.com" style="color:#c9a84c;text-decoration:none;">info@lorogi.com</a> &nbsp;|&nbsp; 786.383.2890</p>
+    <p style="margin-top:6px;color:#5a6a80;">Este es un aviso oficial de renovación anual para empresas registradas en Florida.</p>
+  </div>
+</div>`;
+
+// Init
+document.getElementById('email-body').value = defaultTemplate;
+
+function showTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  const idx = ['clients','template','preview','send'].indexOf(name);
+  document.querySelectorAll('.tab')[idx].classList.add('active');
+  if (name === 'preview') updatePreviewSelect();
+  if (name === 'send') updateStats();
+}
+
+function renderTable() {
+  const tbody = document.getElementById('clients-tbody');
+  document.getElementById('client-count').textContent = clients.length;
+  tbody.innerHTML = clients.map((c,i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td><strong>${c.empresa}</strong></td>
+      <td>${c.dueno}</td>
+      <td style="color:#8fa0bc">${c.email}</td>
+      <td><span class="badge ${c.status==='sent'?'badge-sent':c.status==='error'?'badge-error':'badge-pending'}">${c.status==='sent'?'✓ Enviado':c.status==='error'?'✗ Error':'Pendiente'}</span></td>
+      <td><button class="btn btn-outline" style="padding:4px 10px;font-size:11px;" onclick="removeClient(${i})">✕</button></td>
+    </tr>`).join('');
+}
+
+function addClient() {
+  const e = document.getElementById('add-empresa').value.trim();
+  const d = document.getElementById('add-dueno').value.trim();
+  const em = document.getElementById('add-email').value.trim();
+  if (!e||!d||!em) { alert('Por favor completa todos los campos.'); return; }
+  clients.push({empresa:e,dueno:d,email:em,status:'pending'});
+  document.getElementById('add-empresa').value='';
+  document.getElementById('add-dueno').value='';
+  document.getElementById('add-email').value='';
+  renderTable();
+}
+
+function removeClient(i) { clients.splice(i,1); renderTable(); }
+function clearClients() { if(confirm('¿Eliminar todos los clientes?')) { clients=[]; renderTable(); } }
+
+function loadCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const raw = e.target.result.replace(/\r/g, "");
+    const lines = raw.split("\n").filter(l => l.trim());
+    if (lines.length < 2) { addLog("✗ El archivo no tiene datos suficientes", "err"); return; }
+    const headers = lines[0].toLowerCase().split(",").map(h => h.trim().replace(/"/g,"").replace(/_/g," "));
+    const iE = headers.findIndex(h => h.includes("empresa") || h.includes("company"));
+    const iD = headers.findIndex(h => (h.includes("due") || h.includes("owner") || h.includes("nombre")) && !h.includes("empresa"));
+    const iM = headers.findIndex(h => h.includes("email") || h.includes("correo"));
+    const ei = iE>=0?iE:0, di = iD>=0?iD:1, mi = iM>=0?iM:2;
+    addLog("Columnas → Empresa:["+ei+"] Dueño:["+di+"] Email:["+mi+"]", "info");
+    let added = 0;
+    for (let i=1;i<lines.length;i++) {
+      const cols = lines[i].split(",").map(c=>c.trim().replace(/"/g,""));
+      const email = cols[mi]||"";
+      if (email.includes("@")) {
+        clients.push({empresa:cols[ei]||"Sin nombre",dueno:cols[di]||"Dueño",email:email,status:"pending"});
+        added++;
+      }
+    }
+    renderTable();
+    addLog("✓ "+added+" clientes importados correctamente", "ok");
+    showTab("clients");
+  };
+  reader.onerror = () => addLog("✗ Error leyendo el archivo", "err");
+  reader.readAsText(file, "UTF-8");
+}
+
+function loadSampleData() {
+  clients = [
+    {empresa:'Miami Logistics LLC',dueno:'Carlos Mendez',email:'carlos@miamilog.com',status:'pending'},
+    {empresa:'Sunshine Realty Inc',dueno:'Ana Torres',email:'ana@sunshinerealty.com',status:'pending'},
+    {empresa:'Blue Ocean Catering LLC',dueno:'Roberto Vega',email:'roberto@blueocean.com',status:'pending'},
+    {empresa:'Golden Keys Properties',dueno:'Maria Gonzalez',email:'maria@goldenkeys.com',status:'pending'},
+    {empresa:'Tropical Garden Services',dueno:'Pedro Ramirez',email:'pedro@tropicalgarden.com',status:'pending'},
+  ];
+  renderTable();
+  addLog('✓ Datos de ejemplo cargados (5 clientes)', 'ok');
+}
+
+function downloadTemplate() {
+  const csv = 'nombre_empresa,nombre_dueno,email\nMiami Logistics LLC,Carlos Mendez,carlos@empresa.com\nSunshine Realty Inc,Ana Torres,ana@empresa.com';
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download = 'clientes_florida_renewal.csv';
+  a.click();
+}
+
+function resetTemplate() { document.getElementById('email-body').value = defaultTemplate; }
+
+function buildEmail(client) {
+  const sn = document.getElementById('sender-name').value;
+  return document.getElementById('email-body').value
+    .replace(/{nombre_empresa}/g, client.empresa)
+    .replace(/{nombre_dueno}/g, client.dueno)
+    .replace(/{sender_name}/g, sn);
+}
+
+function buildSubject(client) {
+  return document.getElementById('email-subject').value
+    .replace(/{nombre_empresa}/g, client.empresa)
+    .replace(/{nombre_dueno}/g, client.dueno);
+}
+
+function updatePreviewSelect() {
+  const sel = document.getElementById('preview-select');
+  sel.innerHTML = '<option value="-1">— Selecciona un cliente —</option>';
+  clients.forEach((c,i) => sel.add(new Option(`${c.empresa} — ${c.dueno}`, i)));
+  if (clients.length > 0) { sel.value = 0; updatePreview(); }
+}
+
+function updatePreview() {
+  const i = parseInt(document.getElementById('preview-select').value);
+  if (i < 0 || !clients[i]) { document.getElementById('preview-frame').innerHTML = '<div style="padding:32px;text-align:center;color:#888;">Selecciona un cliente para ver la vista previa</div>'; return; }
+  document.getElementById('preview-frame').innerHTML = buildEmail(clients[i]);
+}
+
+function updateStats() {
+  document.getElementById('stat-total').textContent = clients.length;
+  document.getElementById('stat-sent').textContent = clients.filter(c=>c.status==='sent').length;
+  document.getElementById('stat-error').textContent = clients.filter(c=>c.status==='error').length;
+}
+
+// ── GMAIL API OAUTH ──────────────────────────────────────────
+const CLIENT_ID = '550544333640-5h9gmcs4kmd3snf8bpj3qkfq6sfbdq1n.apps.googleusercontent.com';
+let accessToken = null;
+let authorizedEmail = null;
+
+function connectGmail() {
+  addLog('⏳ Cargando librería de Google...', 'info');
+  if (window.google && window.google.accounts && window.google.accounts.oauth2) {
+    startTokenFlow();
+    return;
+  }
+  const script = document.createElement('script');
+  script.src = 'https://accounts.google.com/gsi/client';
+  script.onload = () => {
+    addLog('✓ Librería cargada, abriendo ventana de Google...', 'info');
+    startTokenFlow();
+  };
+  script.onerror = () => addLog('✗ Error cargando librería de Google. Verifica tu conexión a internet.', 'err');
+  document.head.appendChild(script);
+}
+
+function startTokenFlow() {
+  try {
+    const tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email',
+      prompt: 'select_account',
+      callback: (response) => {
+        if (response.error) {
+          addLog('✗ Error de autorización: ' + response.error, 'err');
+          return;
+        }
+        accessToken = response.access_token;
+        addLog('✓ Token recibido, verificando cuenta...', 'ok');
+        fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { 'Authorization': 'Bearer ' + accessToken }
+        }).then(r => r.json()).then(info => {
+          onConnected(info.email || 'info@lorogi.com');
+        }).catch(() => onConnected('info@lorogi.com'));
+      }
+    });
+    tokenClient.requestAccessToken();
+  } catch(e) {
+    addLog('✗ Error iniciando OAuth: ' + e.message, 'err');
+  }
+}
+
+function onConnected(email) {
+  authorizedEmail = email;
+  document.getElementById('connect-status').innerHTML = `
+    <div style="display:flex;align-items:center;gap:14px;padding:16px;background:#0a2e1a;border-radius:10px;border:1px solid #1a7a4a;">
+      <div style="font-size:32px;">✅</div>
+      <div>
+        <div style="font-weight:600;font-size:15px;color:#34d399;">Conectado exitosamente</div>
+        <div style="font-size:13px;color:#8fa0bc;margin-top:3px;">Enviando como: <strong style="color:#c9a84c;">${email}</strong></div>
+      </div>
+    </div>`;
+  document.getElementById('btn-connect').textContent = '🔄 Cambiar cuenta';
+  document.getElementById('send-account-info').innerHTML =
+    `Los correos se enviarán desde <strong style="color:#c9a84c;">${email}</strong>. Cada cliente recibe su correo individual y personalizado.`;
+  const sendCard = document.getElementById('card-send-action');
+  sendCard.style.opacity = '1';
+  sendCard.style.pointerEvents = 'auto';
+  addLog('✓ Cuenta conectada: ' + email, 'ok');
+}
+
+function makeEmailRFC(client) {
+  const subject = buildSubject(client);
+  const htmlBody = buildEmail(client);
+  const utf8Subject = '=?UTF-8?B?' + btoa(unescape(encodeURIComponent(subject))) + '?=';
+  const emailLines = [
+    'From: Lorogi Services Corp <' + authorizedEmail + '>',
+    'To: ' + client.dueno + ' <' + client.email + '>',
+    'Subject: ' + utf8Subject,
+    'MIME-Version: 1.0',
+    'Content-Type: text/html; charset=UTF-8',
+    'Content-Transfer-Encoding: base64',
+    '',
+    btoa(unescape(encodeURIComponent(htmlBody)))
+  ].join('\r\n');
+  return btoa(unescape(encodeURIComponent(emailLines)))
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+
+async function sendSingleEmail(client) {
+  const raw = makeEmailRFC(client);
+  const resp = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + accessToken,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ raw })
+  });
+  if (!resp.ok) {
+    const err = await resp.json();
+    throw new Error(err.error?.message || resp.statusText);
+  }
+  return await resp.json();
+}
+
+async function sendAllEmails() {
+  if (!accessToken) { alert('Primero conecta tu cuenta Gmail.'); return; }
+  if (clients.length === 0) { alert('No hay clientes en la lista.'); return; }
+  const pending = clients.filter(c => c.status !== 'sent');
+  if (pending.length === 0) { alert('Todos los correos ya fueron enviados.'); return; }
+  if (!confirm('¿Enviar ' + pending.length + ' correos desde ' + authorizedEmail + '?')) return;
+
+  const btn = document.getElementById('btn-send-all');
+  if (btn) btn.disabled = true;
+  addLog('🚀 Iniciando envío de ' + pending.length + ' correos...', 'info');
+
+  let sent = 0, errors = 0;
+  for (let i = 0; i < pending.length; i++) {
+    const c = pending[i];
+    try {
+      await sendSingleEmail(c);
+      c.status = 'sent'; sent++;
+      addLog('✓ Enviado → ' + c.empresa + ' (' + c.email + ')', 'ok');
+    } catch(e) {
+      c.status = 'error'; errors++;
+      addLog('✗ Error con ' + c.empresa + ': ' + e.message, 'err');
+    }
+    renderTable(); updateStats();
+    const pct = Math.round(((i+1)/pending.length)*100);
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-text').textContent =
+      (i+1) + ' de ' + pending.length + ' — ' + sent + ' enviados, ' + errors + ' errores';
+    await new Promise(r => setTimeout(r, 300));
+  }
+  addLog('🎉 Completado: ' + sent + ' enviados, ' + errors + ' errores.', sent > 0 ? 'ok' : 'err');
+  if (btn) btn.disabled = false;
+}
+
+async function sendTestEmail() {
+  if (!accessToken) { alert('Primero conecta tu cuenta Gmail.'); return; }
+  const testClient = {
+    empresa: 'LOROGI SERVICES CORP (PRUEBA)',
+    dueno: 'Alejandra Napolitano',
+    email: authorizedEmail,
+    status: 'pending'
+  };
+  addLog('🧪 Enviando correo de prueba a ' + authorizedEmail + '...', 'info');
+  try {
+    await sendSingleEmail(testClient);
+    addLog('✓ Prueba enviada a ' + authorizedEmail, 'ok');
+    alert('✅ Correo de prueba enviado!\nRevisa la bandeja de ' + authorizedEmail);
+  } catch(e) {
+    addLog('✗ Error en prueba: ' + e.message, 'err');
+    alert('Error: ' + e.message);
+  }
+}
+
+// Init
+renderTable();
+</script>
+</body>
+</html>
